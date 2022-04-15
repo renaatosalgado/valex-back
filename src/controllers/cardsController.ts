@@ -27,7 +27,7 @@ export async function create(req: Request, res: Response) {
     employee.id,
     cardNumber,
     formattedName,
-    cvv,
+    cvvHash,
     expirationDate,
     password,
     isVirtual,
@@ -35,6 +35,8 @@ export async function create(req: Request, res: Response) {
     isBlocked,
     cardType
   );
+
+  console.log({ cvv });
 
   res.sendStatus(201);
 }
@@ -45,7 +47,23 @@ export async function activate(req: Request, res: Response) {
 
   validateActivationInput(cvv, password);
 
-  await cardsActivationServices.verifyCardInfo(cvv, Number(cardId));
+  const card = await cardsActivationServices.verifyCardExistence(
+    Number(cardId)
+  );
+
+  cardsActivationServices.verifyCVV(cvv, card.securityCode);
+
+  cardsActivationServices.verifyAlreadyAtivatedCard(card.password);
+
+  cardsActivationServices.verifyExpirationDate(card.expirationDate);
+
+  const passwordHash = cardsActivationServices.encryptPassword(password);
+
+  const isBlocked = false;
+
+  cardsActivationServices.activateCard(Number(cardId), passwordHash, isBlocked);
+
+  res.sendStatus(201);
 }
 
 export async function overallTransactions(req: Request, res: Response) {}
@@ -79,5 +97,8 @@ function validateActivationInput(cvv: string, password: string) {
     password: password,
   });
 
-  if (validation.error) throw errorTypes.invalidInput("The CVV must have exactly 3 numeric digits and the passowrd must have exactly 4 numeric digits.")
+  if (validation.error)
+    throw errorTypes.invalidInput(
+      "The CVV must have exactly 3 numeric digits and the passowrd must have exactly 4 numeric digits."
+    );
 }

@@ -17,6 +17,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     return res.status(err.code).send(err.message);
   if (err.type === "not_found") return res.status(err.code).send(err.message);
   if (err.type === "conflict") return res.status(err.code).send(err.message);
+
+  res.sendStatus(500);
 });
 
 const PORT = process.env.PORT || 5000;

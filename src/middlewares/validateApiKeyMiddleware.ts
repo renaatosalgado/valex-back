@@ -15,8 +15,6 @@ export async function validateApiKeyMiddleware(
   if (!company)
     throw errorTypes.notFound("This api-key was not found in the database.");
 
-  console.log(company);
-
   res.locals.company = company;
 
   next();
