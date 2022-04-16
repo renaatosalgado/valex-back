@@ -9,7 +9,11 @@ transactionsRouter.get(
   validateApiKeyMiddleware,
   transactionsController.allTransactions
 );
-transactionsRouter.get("/transactions/:cardId/recharge");
-transactionsRouter.get("/transactions/:cardId/payments");
+transactionsRouter.post(
+  "/transactions/:cardId/recharge",
+  validateApiKeyMiddleware,
+  transactionsController.recharge
+);
+transactionsRouter.post("/transactions/:cardId/payments");
 
 export default transactionsRouter;

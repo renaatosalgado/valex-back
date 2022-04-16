@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import * as cardsCreationServices from "../services/cardsCreationServices.js";
 import * as cardsActivationServices from "../services/cardActivationServices.js";
+import * as verifyCardExistenceMiddleware from "../middlewares/verifyCardExistenceMiddleware.js";
+import * as verifyExpirationDateMiddleware from "../middlewares/verifyExpirationDateMiddleware.js";
+import * as verifyEmployeeCompanyLinkMiddleware from "../middlewares/verifyEmployeeCompanyLinkMiddleware.js";
 import * as errorTypes from "../utils/errorTypes.js";
-import joi from "joi";
+import cardActivationSchema from "../schemas/cardActivationSchema.js";
 
 export async function create(req: Request, res: Response) {
   const { employeeId, cardType } = req.body;
@@ -10,9 +13,11 @@ export async function create(req: Request, res: Response) {
 
   validateCardType(cardType);
 
-  const employee = await cardsCreationServices.verifyEmployeeRegister(
-    employeeId, company.id
-  );
+  const employee =
+    await verifyEmployeeCompanyLinkMiddleware.verifyEmployeeRegister(
+      employeeId,
+      company.id
+    );
 
   await cardsCreationServices.verifyEmployeeCards(cardType, employeeId);
 
@@ -46,9 +51,9 @@ export async function activate(req: Request, res: Response) {
   const { cardId } = req.params;
   const { cvv, password } = req.body;
 
-  validateActivationInput(cvv, password);
+  validateActivationInput(req.body);
 
-  const card = await cardsActivationServices.verifyCardExistence(
+  const card = await verifyCardExistenceMiddleware.verifyCardExistence(
     Number(cardId)
   );
 
@@ -56,13 +61,17 @@ export async function activate(req: Request, res: Response) {
 
   cardsActivationServices.verifyAlreadyAtivatedCard(card.password);
 
-  cardsActivationServices.verifyExpirationDate(card.expirationDate);
+  verifyExpirationDateMiddleware.verifyExpirationDate(card.expirationDate);
 
   const passwordHash = cardsActivationServices.encryptPassword(password);
 
   const isBlocked = false;
 
-  cardsActivationServices.activateCard(Number(cardId), passwordHash, isBlocked);
+  await cardsActivationServices.activateCard(
+    Number(cardId),
+    passwordHash,
+    isBlocked
+  );
 
   res.sendStatus(201);
 }
@@ -79,25 +88,11 @@ function validateCardType(cardType: string) {
   }
 }
 
-function validateActivationInput(cvv: string, password: string) {
-  const activationSchema = joi.object({
-    cvv: joi
-      .string()
-      .pattern(/^[0-9]{3}$/)
-      .required(),
-    password: joi
-      .string()
-      .pattern(/^[0-9]{4}$/)
-      .required(),
-  });
-
-  const validation = activationSchema.validate({
-    cvv: cvv,
-    password: password,
-  });
+function validateActivationInput(body: any) {
+  const validation = cardActivationSchema.validate(body);
 
   if (validation.error)
     throw errorTypes.invalidInput(
-      "The CVV must have exactly 3 numeric digits and the passowrd must have exactly 4 numeric digits."
+      "The 'cvv' must have exactly 3 numeric digits and the 'passowrd' must have exactly 4 numeric digits."
     );
 }

@@ -5,6 +5,6 @@ import { validateApiKeyMiddleware } from "../middlewares/validateApiKeyMiddlewar
 const cardsRouter = Router();
 
 cardsRouter.post("/cards", validateApiKeyMiddleware, cardsController.create);
-cardsRouter.post("/cards/:cardId/activation", cardsController.activate);
+cardsRouter.put("/cards/:cardId/activation", cardsController.activate);
 
 export default cardsRouter;

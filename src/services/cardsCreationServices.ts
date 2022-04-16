@@ -2,22 +2,7 @@ import { faker } from "@faker-js/faker";
 import dayjs from "dayjs";
 import bcrypt from "bcrypt";
 import * as errorTypes from "../utils/errorTypes.js";
-import * as employeeRepository from "../repositories/employeeRepository.js";
 import * as cardRepository from "../repositories/cardRepository.js";
-
-export async function verifyEmployeeRegister(
-  employeeId: number,
-  companyId: number
-) {
-  const employee = await employeeRepository.findById(employeeId);
-  if (!employee)
-    throw errorTypes.notFound("This employee was not found in the database.");
-
-  if (employee.companyId !== companyId)
-    throw errorTypes.forbidden("This employee is assigned to another company.");
-
-  return employee;
-}
 
 export async function verifyEmployeeCards(
   type: cardRepository.TransactionTypes,
