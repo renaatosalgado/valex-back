@@ -30,3 +30,12 @@ export function conflict(message: string) {
     }
 }
 
+export function forbidden(message: string) {
+    return {
+        type: "forbidden",
+        code: 403,
+        message
+    }
+}
+
+

@@ -6,11 +6,12 @@ import joi from "joi";
 
 export async function create(req: Request, res: Response) {
   const { employeeId, cardType } = req.body;
+  const { company } = res.locals;
 
   validateCardType(cardType);
 
   const employee = await cardsCreationServices.verifyEmployeeRegister(
-    employeeId
+    employeeId, company.id
   );
 
   await cardsCreationServices.verifyEmployeeCards(cardType, employeeId);
@@ -65,8 +66,6 @@ export async function activate(req: Request, res: Response) {
 
   res.sendStatus(201);
 }
-
-export async function overallTransactions(req: Request, res: Response) {}
 
 function validateCardType(cardType: string) {
   if (
