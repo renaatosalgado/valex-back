@@ -14,6 +14,9 @@ transactionsRouter.post(
   validateApiKeyMiddleware,
   transactionsController.recharge
 );
-transactionsRouter.post("/transactions/:cardId/payments");
+transactionsRouter.post(
+  "/transactions/:cardId/purchase",
+  transactionsController.purchase
+);
 
 export default transactionsRouter;
